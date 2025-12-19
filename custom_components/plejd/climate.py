@@ -55,6 +55,20 @@ class PlejdThermostat(PlejdDeviceBaseEntity, ClimateEntity):
         return self._data.get("target_temperature")
 
     @property
+    def min_temp(self) -> float:
+        """Return the minimum temperature."""
+        if min_t := self._data.get("min_temperature"):
+            return min_t
+        return self._attr_min_temp
+
+    @property
+    def max_temp(self) -> float:
+        """Return the maximum temperature."""
+        if max_t := self._data.get("max_temperature"):
+            return max_t
+        return self._attr_max_temp
+
+    @property
     def hvac_mode(self) -> HVACMode:
         """Return the current HVAC mode."""
         if self._data.get("state", False):
