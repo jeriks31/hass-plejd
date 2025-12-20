@@ -1,6 +1,6 @@
 """Support for Plejd thermostats."""
 
-from homeassistant.components.climate import ClimateEntity, HVACMode
+from homeassistant.components.climate import ClimateEntity, HVACMode, ClimateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -38,7 +38,7 @@ class PlejdThermostat(PlejdDeviceBaseEntity, ClimateEntity):
         self.device: dt.PlejdThermostat
 
         self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
-        self._attr_supported_features = 0  # No features for now
+        self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
         self._attr_temperature_unit = "°C"
         self._attr_min_temp = device.minTemperature
         self._attr_max_temp = device.maxTemperature
@@ -85,3 +85,11 @@ class PlejdThermostat(PlejdDeviceBaseEntity, ClimateEntity):
         """Set the HVAC mode."""
         mode_str = "heat" if hvac_mode == HVACMode.HEAT else "off"
         await self.device.set_hvac_mode(mode_str)
+
+    async def async_turn_off(self) -> None:
+        """Turn off the thermostat."""
+        await self.async_set_hvac_mode(HVACMode.OFF)
+    
+    async def async_turn_on(self) -> None:
+        """Turn on the thermostat."""
+        await self.async_set_hvac_mode(HVACMode.HEAT)

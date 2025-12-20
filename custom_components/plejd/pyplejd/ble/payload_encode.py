@@ -1,6 +1,7 @@
 from __future__ import annotations
 import binascii
 from datetime import datetime, timedelta
+import math
 import time
 
 import typing
@@ -56,9 +57,12 @@ def set_state(mesh: PlejdMesh, address, **state):
         send_log(f"COLORTEMP command {hex_payload(payloads[-1])}", address)
 
     if (target_temp := state.get("target_temperature", None)) is not None:
-        # Target temperature command for thermostat
-        payloads.append(f"{address:02x} 0110 0420 030113 {target_temp:04x}") # TODO: Replace with correct payload
-        send_log(f"TARGET TEMPERATURE command {hex_payload(payloads[-1])}", address)
+        # Target temperature command for thermostat        
+        target_temp_ceil = math.ceil(target_temp)
+        temp_value = int(target_temp_ceil * 10)
+        temp_bytes = temp_value.to_bytes(2, "little")
+        payloads.append(f"{address:02x} 0110 045c {temp_bytes.hex()}")
+        send_log(f"TARGET TEMPERATURE command {hex_payload(payloads[-1])} ({target_temp_ceil}°C)", address)
 
     if (cover := state.get("cover", None)) is not None:
         if cover < 0:
