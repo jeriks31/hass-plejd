@@ -156,6 +156,34 @@ class CoverableSettings(BaseModel):
     # coverableCalibration: dict
 
 
+class FloorSensorConfig(BaseModel):
+    resistance: int
+    celsius: int
+    betaKelvin: int
+    name: str
+
+
+class TemperatureLimits(BaseModel):
+    maxFloorTemperature: int
+    minFloorTemperature: int
+    maxRoomTemperature: int
+    minRoomTemperature: int
+    maxUserInputTemperature: int
+    minUserInputTemperature: int
+    floor: str # "Stone" | etc...
+
+
+class ClimateSettings(BaseModel):
+    installationConfirmed: bool
+    curingModeStartTime: str | None = None
+    curingModeEndTime: str | None = None
+    regulationMode: str | None = None # "Floor" | "RoomWithFloorLimits"
+    floorSensorConfig: FloorSensorConfig | None = None
+    temperatureLimits: TemperatureLimits | None = None
+    #floorTemperatureOffset: int | None = None
+    #roomTemperatureOffset: int | None = None
+
+
 class PlejdDeviceOutputSetting(PlejdObject):
     deviceId: str
     siteId: str
@@ -175,6 +203,7 @@ class PlejdDeviceOutputSetting(PlejdObject):
     colorTemperature: ColorTemperature | None = None
     coverableSettings: CoverableSettings | None = None
     # minimumRelayOffTime: int = None
+    climateSettings: ClimateSettings | None = None
 
 
 class MotionSensor(PlejdObject):

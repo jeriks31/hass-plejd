@@ -25,6 +25,7 @@ class PlejdDeviceType(StrEnum):
     MOTION = "MOTION"
     COVER = "COVERABLE"
     SCENE = "SCENE"
+    THERMOSTAT = "THERMOSTAT"
     UNKNOWN = "UNKNOWN"
 
 
