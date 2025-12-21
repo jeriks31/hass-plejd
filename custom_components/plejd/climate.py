@@ -93,3 +93,9 @@ class PlejdThermostat(PlejdDeviceBaseEntity, ClimateEntity):
     async def async_turn_on(self) -> None:
         """Turn on the thermostat."""
         await self.async_set_hvac_mode(HVACMode.HEAT)
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        await super().async_added_to_hass()
+        # Request the current target temperature
+        await self.device.request_target_temperature()

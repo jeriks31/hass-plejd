@@ -112,6 +112,15 @@ def request_time(mesh: PlejdMesh, address):
     return encode(mesh, [payload])
 
 
+def request_target_temperature(mesh: PlejdMesh, address):
+    # Request target temperature report command
+    # AA 0102 045C
+
+    payload = f"{address:02x} 0102 045c"
+    send_log(f"TARGET TEMPERATURE REQUEST {hex_payload(payload)}", address)
+    return encode(mesh, [payload])
+
+
 def request_button(mesh: PlejdMesh):
     # Request button identification
     # 00 0110 0015

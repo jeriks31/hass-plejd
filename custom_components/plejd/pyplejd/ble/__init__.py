@@ -215,6 +215,10 @@ class PlejdMesh:
             return True
         return False
 
+    async def request_target_temperature(self, address: int):
+        payloads = payload_encode.request_target_temperature(self, address)
+        await self._write(payloads)
+
     async def broadcast_time(self):
         payloads = payload_encode.set_time(self)
         await self._write(payloads)

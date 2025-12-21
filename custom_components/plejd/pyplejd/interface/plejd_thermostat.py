@@ -32,3 +32,8 @@ class PlejdThermostat(PlejdOutput):
             return
         state = hvac_mode == "heat"
         await self._mesh.set_state(self.address, state=state)
+
+    async def request_target_temperature(self):
+        if not self._mesh:
+            return
+        await self._mesh.request_target_temperature(self.address)
