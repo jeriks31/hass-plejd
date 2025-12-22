@@ -216,6 +216,8 @@ class PlejdMesh:
         return False
 
     async def request_target_temperature(self, address: int):
+        if not self.connected or not self._crypto_key or not self._gateway_node:
+            return
         payloads = payload_encode.request_target_temperature(self, address)
         await self._write(payloads)
 
