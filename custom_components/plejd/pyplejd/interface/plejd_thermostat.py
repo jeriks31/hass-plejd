@@ -11,7 +11,7 @@ class PlejdThermostat(PlejdOutput):
         self.maxTemperature = self.settings.climateSettings.temperatureLimits.maxUserInputTemperature
 
         # Request target temperature when mesh connects
-        def on_connect():
+        def on_connect(*args, **kwargs):
             if self._mesh.connected and not self._state.get("target_temperature"):
                 import asyncio
                 asyncio.create_task(self.request_target_temperature())
