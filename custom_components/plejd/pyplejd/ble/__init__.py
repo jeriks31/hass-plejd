@@ -149,6 +149,7 @@ class PlejdMesh:
         async def _lastdata_listener(_, lastdata: bytearray):
 
             data = encrypt_decrypt(self._crypto_key, self._gateway_node, lastdata)
+            _LOGGER.log(f"Devices: {[(d.address, d.outputType) for d in self.manager.devices if hasattr(d, 'address')]}", logging.DEBUG)
             retval = parse_data(data, {d.address: d.outputType for d in self.manager.devices if hasattr(d, 'address')})
 
             self._publish(self._state_listeners, retval)

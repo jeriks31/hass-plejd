@@ -64,10 +64,7 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
                 "state": state,
             }
             device_type = device_types.get(addr, None)
-            if device_type == PlejdDeviceType.LIGHT:
-                result["dim"] = data2
-                rec_log(f"DIM {state=} {data1=} {data2=} {extra=} {extra_hex}", addr)
-            elif device_type == PlejdDeviceType.COVER:
+            if device_type == PlejdDeviceType.COVER:
                 cover_position = int.from_bytes(
                     [data1, data2], byteorder="little", signed=True
                 )
@@ -84,13 +81,15 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
                 result["cover_position"] = cover_position
                 result["cover_angle"] = cover_angle
             elif device_type == PlejdDeviceType.THERMOSTAT:
-                # Thermostat data
-                current_temperature = (data2 & 0x3F) - 10 # Temperature decoding modulo-64 with 10 degree offset
+                # Temperature decoding modulo-64 with 10 degree offset
+                current_temperature = (data2 & 0x3F) - 10
                 heating = extra[0] == 0x80 # Not sure about this one
                 rec_log(f"    {current_temperature=} {heating=}", addr)
                 result["current_temperature"] = current_temperature
                 result["heating"] = heating
-            else:
+            else: # For some reason, lights seem to have devicetype SENSOR sometimes? So fallback to dimming.
+                result["dim"] = data2
+                rec_log(f"DIM {state=} {data1=} {data2=} {extra=} {extra_hex}", addr)
                 rec_log(f"Unhandled device type {device_type}", addr)
 
             rec_log(f"    {data_hex}", addr)
