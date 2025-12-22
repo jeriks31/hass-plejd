@@ -1,10 +1,12 @@
 import logging
 
+_base_logger = __name__.rsplit('.', 1)[0]
+
 
 def send_log(message, address=None):
-    L_ALL = logging.getLogger("pyplejd.ble.device.all")
+    L_ALL = logging.getLogger(f"{_base_logger}.device.all")
     if address is not None:
-        L = logging.getLogger(f"pyplejd.ble.device.{address}")
+        L = logging.getLogger(f"{_base_logger}.device.{address}")
         L.debug(f"SEND {address}: {message}")
         L_ALL.debug(f"SEND {address}: {message}")
     else:
@@ -12,9 +14,9 @@ def send_log(message, address=None):
 
 
 def rec_log(message, address=None):
-    L_ALL = logging.getLogger("pyplejd.ble.device.all")
+    L_ALL = logging.getLogger(f"{_base_logger}.device.all")
     if address is not None:
-        L = logging.getLogger(f"pyplejd.ble.device.{address}")
+        L = logging.getLogger(f"{_base_logger}.device.{address}")
         L.debug(f"RECEIVE {address}: {message}")
         L_ALL.debug(f"RECEIVE {address}: {message}")
     else:
