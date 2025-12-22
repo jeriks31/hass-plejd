@@ -17,7 +17,7 @@ from .parse_lightlevel import parse_lightlevel
 from .ble_characteristics import PLEJD_SERVICE
 
 _LOGGER = logging.getLogger(__name__)
-_CONNECTION_LOG = logging.getLogger("pyplejd.ble.connection")
+_CONNECTION_LOG = logging.getLogger(f"{__name__}.connection")
 
 
 class PlejdMesh:

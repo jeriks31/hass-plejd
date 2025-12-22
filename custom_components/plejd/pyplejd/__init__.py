@@ -55,7 +55,7 @@ class PlejdManager:
         self.mesh.subscribe_connect(self._update_connected)
         self.mesh.subscribe_state(self._update_device)
 
-        LOGGER = logging.getLogger("pyplejd.device_list")
+        LOGGER = logging.getLogger(f"{__name__}.device_list")
 
         LOGGER.debug("Output Devices:")
         for device in self.cloud.outputs:
