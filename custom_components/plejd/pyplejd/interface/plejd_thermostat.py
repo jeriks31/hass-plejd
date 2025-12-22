@@ -10,6 +10,14 @@ class PlejdThermostat(PlejdOutput):
         self.minTemperature = self.settings.climateSettings.temperatureLimits.minUserInputTemperature
         self.maxTemperature = self.settings.climateSettings.temperatureLimits.maxUserInputTemperature
 
+        # Request target temperature when mesh connects
+        def on_connect():
+            if self._mesh.connected and not self._state.get("target_temperature"):
+                import asyncio
+                asyncio.create_task(self.request_target_temperature())
+
+        self._mesh._connect_listeners.add(on_connect)
+
     def parse_state(self, update, state):
         available = state.get("available", False)
         return {
