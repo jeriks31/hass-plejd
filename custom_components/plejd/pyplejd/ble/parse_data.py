@@ -1,8 +1,7 @@
-from ..interface.plejd_device import PlejdDeviceType
 from .debug import rec_log
 
 
-def parse_data(data: bytearray, device_types: dict[int, str]):
+def parse_data(data: bytearray):
     data_bytes = [data[i] for i in range(0, len(data))]
     data_hex = "".join(f"{b:02x}" for b in data_bytes)
 
@@ -57,40 +56,40 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
             *extra,
         ]:
             # State command - different data depending on device type
-            extra_hex = "".join(f"{e:02x}" for e in extra)
-
             result = {
                 "address": addr,
                 "state": state,
             }
-            device_type = device_types.get(addr, None)
-            if device_type == PlejdDeviceType.COVER:
-                cover_position = int.from_bytes(
-                    [data1, data2], byteorder="little", signed=True
-                )
-                cover_angle = None
-                if extra:
-                    # The cover angle is given as a six bit signed number?
-                    cover_angle = extra[0]
-                    cover_angle_sign = 1
-                    if cover_angle & 0x20:
-                        cover_angle = ~cover_angle
-                        cover_angle_sign = -1
-                    cover_angle = (cover_angle & 0x1F) * cover_angle_sign
-                rec_log(f"    {cover_position=} {cover_angle=}", addr)
-                result["cover_position"] = cover_position
-                result["cover_angle"] = cover_angle
-            elif device_type == PlejdDeviceType.THERMOSTAT:
-                # Temperature decoding modulo-64 with 10 degree offset
-                current_temperature = (data2 & 0x3F) - 10
+            # Light logic
+            extra_hex = "".join(f"{e:02x}" for e in extra)
+            rec_log(f"DIM {state=} {data1=} {data2=} {extra=} {extra_hex}", addr)
+            result["dim"] = data2
+
+            # Cover logic
+            cover_position = int.from_bytes(
+                [data1, data2], byteorder="little", signed=True
+            )
+            cover_angle = None
+            if extra:
+                # The cover angle is given as a six bit signed number?
+                cover_angle = extra[0]
+                cover_angle_sign = 1
+                if cover_angle & 0x20:
+                    cover_angle = ~cover_angle
+                    cover_angle_sign = -1
+                cover_angle = (cover_angle & 0x1F) * cover_angle_sign
+            rec_log(f"    {cover_position=} {cover_angle=}", addr)
+            result["cover_position"] = cover_position
+            result["cover_angle"] = cover_angle
+
+            # Thermostat logic
+            # Temperature decoding modulo-64 with 10 degree offset
+            current_temperature = (data2 & 0x3F) - 10
+            if extra:
                 heating = extra[0] == 0x80 # Not sure about this one
-                rec_log(f"    {current_temperature=} {heating=}", addr)
-                result["current_temperature"] = current_temperature
-                result["heating"] = heating
-            else: # For some reason, lights seem to have devicetype SENSOR sometimes? So fallback to dimming.
-                result["dim"] = data2
-                rec_log(f"DIM {state=} {data1=} {data2=} {extra=} {extra_hex}", addr)
-                rec_log(f"Unhandled device type {device_type}", addr)
+            rec_log(f"    {state=} {current_temperature=} {heating=}", addr)
+            result["current_temperature"] = current_temperature
+            result["heating"] = heating
 
             rec_log(f"    {data_hex}", addr)
 
@@ -117,16 +116,16 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
 
         case [addr, 0x01, _, 0x04, 0x5c, temp_low, temp_high]:
             # Thermostat target temperature
-            # third param is 0x10 when set physically on device, 0x00 or 0x01 when set via Plejd app, 0x03 when responding to our 'AA 0102 045c' request
+            # third param is 0x10 when set physically on device, 0x00 or 0x01 when set via Plejd app, 0x03 when responding to 'AA 0102 045c' request
             temp = int.from_bytes([temp_low, temp_high], "little") / 10
-            rec_log(f"THERMOSTAT TARGET TEMP {temp=}", addr)
+            rec_log(f"THERMOSTAT TARGET_TEMPERATURE {temp=}", addr)
             rec_log(f"    {data_hex}", addr)
             return {
                 "address": addr,
                 "target_temperature": temp,
             }
 
-        case [addr, 0x01, _, 0x04, 0x5f, temp_low, temp_high]:
+        case [addr, 0x01, _, 0x04, 0x5f, *extra]:
             # Thermostat state update (off)
             rec_log(f"THERMOSTAT STATE OFF", addr)
             rec_log(f"    {data_hex}", addr)
@@ -135,7 +134,7 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
                 "state": False,
             }
 
-        case [addr, 0x01, _, 0x04, 0x7e, temp_low, temp_high]:
+        case [addr, 0x01, _, 0x04, 0x7e, *extra]:
             # Thermostat state update (on)
             rec_log(f"THERMOSTAT STATE ON", addr)
             rec_log(f"    {data_hex}", addr)
@@ -144,11 +143,11 @@ def parse_data(data: bytearray, device_types: dict[int, str]):
                 "state": True,
             }
         
-        case [addr, 0x01, _, 0x04, 0x60, sub_id, min_low, min_high, max_low, max_high]:
+        case [addr, 0x01, _, 0x04, 0x60, limit_type, min_low, min_high, max_low, max_high]:
             # Thermostat temperature limits update
             min_temp = int.from_bytes([min_low, min_high], "little") / 10
             max_temp = int.from_bytes([max_low, max_high], "little") / 10
-            rec_log(f"THERMOSTAT LIMITS {min_temp=} {max_temp=}", addr)
+            rec_log(f"THERMOSTAT TEMPERATURE LIMITS {min_temp=} {max_temp=}", addr)
             rec_log(f"    {data_hex}", addr)
             return {
                 "address": addr,

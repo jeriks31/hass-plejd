@@ -149,7 +149,7 @@ class PlejdMesh:
         async def _lastdata_listener(_, lastdata: bytearray):
 
             data = encrypt_decrypt(self._crypto_key, self._gateway_node, lastdata)
-            retval = parse_data(data, {d.address: d.outputType for d in self.manager.devices if hasattr(d, 'address') and hasattr(d, 'outputType')})
+            retval = parse_data(data)
 
             self._publish(self._state_listeners, retval)
 

@@ -58,11 +58,10 @@ def set_state(mesh: PlejdMesh, address, **state):
 
     if (target_temp := state.get("target_temperature", None)) is not None:
         # Target temperature command for thermostat        
-        target_temp_ceil = math.ceil(target_temp)
-        temp_value = int(target_temp_ceil * 10)
+        temp_value = int(target_temp) * 10
         temp_bytes = temp_value.to_bytes(2, "little")
         payloads.append(f"{address:02x} 0110 045c {temp_bytes.hex()}")
-        send_log(f"TARGET TEMPERATURE command {hex_payload(payloads[-1])} ({target_temp_ceil}°C)", address)
+        send_log(f"TARGET_TEMPERATURE command {hex_payload(payloads[-1])} ({target_temp}°C)", address)
 
     if (cover := state.get("cover", None)) is not None:
         if cover < 0:
@@ -117,7 +116,7 @@ def request_target_temperature(mesh: PlejdMesh, address):
     # AA 0102 045C
 
     payload = f"{address:02x} 0102 045c"
-    send_log(f"TARGET TEMPERATURE REQUEST {hex_payload(payload)}", address)
+    send_log(f"TARGET_TEMPERATURE REQUEST {hex_payload(payload)}", address)
     return encode(mesh, [payload])
 
 
